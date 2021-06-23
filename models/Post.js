@@ -90,15 +90,19 @@ Post.reusablePostQuery = function (uniqueOperations, visitorId) {
                 }
             }
         ]
-
-        aggOperations = [...uniqueOperations, ...aggOperations]
-        // console.log(aggOperations);
+        console.log(uniqueOperations.length)
+        if (uniqueOperations.length >= 3) {
+            let [match, sort] = [...uniqueOperations]
+            aggOperations = [match, ...aggOperations, sort]
+        } else {
+            aggOperations = [...uniqueOperations, ...aggOperations]
+        }
         let posts = await postsCollection.aggregate(aggOperations).toArray()
 
         // clean up author property in each post object
         posts = posts.map(function (post) {
             post.isVisitorOwner = post.authorId.equals(visitorId)
-            post.authorId = undefined
+            // post.authorId = undefined //!commented cause breaks the edit post feature
 
             post.author = {
                 username: post.author.username,
@@ -123,6 +127,7 @@ Post.findSingleById = function (id, visitorId) {
         ], visitorId)
 
         if (posts.length) {
+            console.log("posts[0].authorId - " + posts[0].authorId);//FIXME
             resolve(posts[0])
         } else {
             reject()
@@ -158,7 +163,8 @@ Post.search = function (searchTerm) {
         if (typeof (searchTerm) == "string") {
             let posts = await Post.reusablePostQuery([
                 { $match: { $text: { $search: searchTerm } } },
-                { $sort: { score: { $meta: "textScore" } } }
+                { $sort: { score: { $meta: "textScore" } } },
+                { searchTerm: searchTerm }
             ])
             resolve(posts)
         } else {
@@ -167,25 +173,25 @@ Post.search = function (searchTerm) {
     })
 }
 
-Post.countPostsbyAuthor = function(id) {
-    return new Promise(async(resolve, reject) => {
-        let postCount = await postsCollection.countDocuments({author: id})
+Post.countPostsbyAuthor = function (id) {
+    return new Promise(async (resolve, reject) => {
+        let postCount = await postsCollection.countDocuments({ author: id })
         resolve(postCount)
     })
 }
 
-Post.getFeed = async function(id) {
+Post.getFeed = async function (id) {
     // create an array of the user ids that the current user follows
-    let followedUsers = await followsCollection.find({authorId: new ObjectID(id)}).toArray()
+    let followedUsers = await followsCollection.find({ authorId: new ObjectID(id) }).toArray()
     followedUsers.map((followDoc) => {
         return followDoc.followedId
     })
 
     //look for posts where the author is in the above array of followed users
     return Post.reusablePostQuery([
-        {$match: {author: {$in: [followedUsers]}}},
-        {$sort: {createdDate: -1}}
+        { $match: { author: { $in: [followedUsers] } } },
+        { $sort: { createdDate: -1 } }
     ])
-}   
+}
 
 module.exports = Post

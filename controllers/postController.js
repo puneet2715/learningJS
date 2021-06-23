@@ -26,11 +26,12 @@ exports.viewSingle = async function (req, res) {
 
 exports.viewEditScreen = async function (req, res) {
     try {
-        let post = await Post.findSingleById(req.params.id)
-        if(post.authorId == req.visitorId) {
+        let post = await Post.findSingleById(req.params.id, req.visitorId)
+        console.log("post.authorId - " + post.authorId); //FIXME being returned undefined
+        if (post.authorId == req.visitorId) {
             res.render("edit-post", { post: post })
         } else {
-            req.flash("errors", "You do not have permission to perform that action")
+            req.flash("errors", "You do not have permission to perform Editing")
             req.session.save(() => res.redirect("/"))
         }
     } catch {
@@ -38,22 +39,22 @@ exports.viewEditScreen = async function (req, res) {
     }
 }
 
-exports.edit = function(req, res) {
-    let post = new Post(req.body, req.visitorId, req.params.id )
+exports.edit = function (req, res) {
+    let post = new Post(req.body, req.visitorId, req.params.id)
     post.update().then((status) => {
         //the post was successfully updated in the database
         //or the user did have permission, but there were validation errors 
-        if(status == "success") {
+        if (status == "success") {
             //post was upated in db
             req.flash("success", "Post successfully updated")
-            req.session.save(function() {
+            req.session.save(function () {
                 res.redirect(`/post/${req.params.id}/edit`)
             })
         } else {
-            post.errors.forEach(function(error) {
+            post.errors.forEach(function (error) {
                 req.flash("errors", error)
             })
-            req.session.save(function() {
+            req.session.save(function () {
                 res.redirect(`/post/${req.params.id}/edit`)
             })
         }
@@ -61,13 +62,13 @@ exports.edit = function(req, res) {
         //a post with the requested id does not exist
         //or if the current visitor is not the owner of the requested post
         req.flash("errors", "You do not have permission to perform that action.")
-        req.session.save(function() {
+        req.session.save(function () {
             res.redirect("/")
         })
     })
 }
 
-exports.delete = function(req, res) {
+exports.delete = function (req, res) {
     Post.delete(req.params.id, req.visitorId).then(() => {
         req.flash("success", "Post successfully deleted")
         req.session.save(() => res.redirect(`/profile/${req.session.user.username}`))
@@ -78,10 +79,10 @@ exports.delete = function(req, res) {
     )
 }
 
-exports.search = function(req, res) {
+exports.search = function (req, res) {
     Post.search(req.body.searchTerm).then(posts => {
-      res.json(posts)
+        res.json(posts)
     }).catch(() => {
-      res.json([])
+        res.json([])
     })
-  }
+}
