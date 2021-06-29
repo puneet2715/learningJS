@@ -6,7 +6,8 @@
   "scripts": {
     "new": "nodemon db",
     "start": "node db.js",
-    "watch": "start nodemon db --ignore frontend-js --ignore public/ && start webpack --watch",
+    "watch-windows": "start nodemon db --ignore frontend-js --ignore public/ && start webpack --watch",
+    "watch-linux": "nodemon db --ignore frontend-js --ignore public/ & webpack --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
