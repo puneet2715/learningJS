@@ -90,7 +90,6 @@ Post.reusablePostQuery = function (uniqueOperations, visitorId) {
                 }
             }
         ]
-        console.log(uniqueOperations.length)
         if (uniqueOperations.length >= 3) {
             let [match, sort] = [...uniqueOperations]
             aggOperations = [match, ...aggOperations, sort]
@@ -127,7 +126,6 @@ Post.findSingleById = function (id, visitorId) {
         ], visitorId)
 
         if (posts.length) {
-            console.log("posts[0].authorId - " + posts[0].authorId);//FIXME
             resolve(posts[0])
         } else {
             reject()

@@ -27,7 +27,6 @@ exports.viewSingle = async function (req, res) {
 exports.viewEditScreen = async function (req, res) {
     try {
         let post = await Post.findSingleById(req.params.id, req.visitorId)
-        console.log("post.authorId - " + post.authorId); //FIXME being returned undefined
         if (post.authorId == req.visitorId) {
             res.render("edit-post", { post: post })
         } else {
